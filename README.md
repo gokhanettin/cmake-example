@@ -4,8 +4,9 @@
 
 CMake is a popular build system generator. This example demonstrates how to use
 CMake to build a piece of software which has different modules each of which
-produces a static library and links to a common shared library which also links
-to a 3rdparty library FreeGLUT.
+produces static libraries and possibly executables that link to a common shared
+library and a 3rdparty library FreeGLUT. This example is tested on Windows but
+it should be even easier to apply the same ideas to any other OS.
 
 Here is the directory structure of the project:
 
@@ -85,7 +86,8 @@ for <EXAMPLE-BUILD-TYPE> values.
 
 ## Build
 
-Eclipse runs the following commands:
+Though I am not a big fan of IDEs (I love [neo]vim), Eclipse runs the following
+commands through cmake4eclipse plugin.
 
 	cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON -G "MinGW Makefiles" -DEXAMPLE_BUILD_TYPE:STRING=<EXAMPLE-BUILD-TYPE> "path/to/cmake-example"
 	make -j6 all
