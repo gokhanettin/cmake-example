@@ -1,118 +1,51 @@
 # CMake Example
 
-## Introduction
+An example cmake project to demonstrate relations between cmake targets.
 
-CMake is a popular build system generator. This example demonstrates how to use
-CMake to build a piece of software which has different modules each of which
-produces static libraries and possibly executables that link to a common shared
-library and a 3rdparty library FreeGLUT. This example is tested on Windows but
-it should be even easier to apply the same ideas to any other OS.
+We have libraries for sum, multiplication, factorial, and substraction. The
+multiplcation library uses the sum library to implement multiplication
+operation. The factorial library uses the multiplication library to compute the
+factorial of a given integer. CMake regulates the relations between these
+libraries without exposing more than their public interfaces. For example, the
+factorial library doesn't know about the implementation details of the
+multiplication library. If we change the the multiplication library to simply
+use multiplication operator rather than utilizing the sum library, the factorial
+library doesn't need any change at all. Each of these libraries are also tested
+using GTest. GTest dependency is managed by conan, C/C++ package manager. We
+have two client applications, app1 and app2. These applications use our
+highly-modular, reusable, well-tested libraries.
 
-Here is the directory structure of the project:
+As a summary, we divide each functional component into a library. We define
+interfaces for these libraries in their header files. As we implement these
+interfaces, we either write unit tests or alternatively, go for Test Driven
+Development. We can also start writing applications when the library interfaces
+reach to a certain level of stabilization. If applications are simple CLI apps,
+CTest is enough to test their outputs with specified inputs. Otherwise, they
+may require different integration testing strategies.
 
-	cmake-example
-	│   .cproject
-	│   .project
-	│   CMakeLists.txt
-	│   README.md
-	│
-	├───circle
-	│   │   CMakeLists.txt
-	│   │
-	│   ├───blue
-	│   │       blue.c
-	│   │       blue.h
-	│   │       CMakeLists.txt
-	│   │       main.c
-	│   │
-	│   ├───green
-	│   │       CMakeLists.txt
-	│   │       green.c
-	│   │       green.h
-	│   │       main.c
-	│   │
-	│   └───libcircle
-	│           circle.c
-	│           circle.h
-	│           CMakeLists.txt
-	│
-	├───cmake
-	│       BuildTypeConfig.cmake
-	│       FindFreeGLUT.cmake
-	│
-	├───common
-	│   │   CMakeLists.txt
-	│   │
-	│   └───libdisplay
-	│           CMakeLists.txt
-	│           display.c
-	│           display.h
-	│
-	└───square
-		│   CMakeLists.txt
-		│
-		├───libsquare
-		│       CMakeLists.txt
-		│       square.c
-		│       square.h
-		│
-		├───red
-		│       CMakeLists.txt
-		│       main.c
-		│       red.c
-		│       red.h
-		│
-		└───yellow
-				CMakeLists.txt
-				main.c
-				yellow.c
-				yellow.h
-
-The modules are `circle`, `square` and `common`. These modules are defined as
-CMake projects. The modules contain targets. For example, the `square` module
-contains `libsquare`, `red`, and `yellow` targets. As its name suggests, `libsquare`
-target is a library while the other two are executables. The same convention also
-applies to `circle` module.
-
-`libsquare` and `libcircle` are static libraries. They just print hello
-messages. Static libraries go to a library directory specified by
-`build/<EXAMPLE-BUILD-TYPE>/lib`.
-
-`libdisplay` is a dynamic (~shared) library which links to FreeGLUT and serves
-executables to displays circles and squares in different colors. DLLs and
-executables all go to a runtime directory specified by
-`build/<EXAMPLE-BUILD-TYPE>/bin` so that the executables can run. See **Build**
-for <EXAMPLE-BUILD-TYPE> values.
+![graph](./assets/graph.png)
 
 ## Build
 
-Though I am not a big fan of IDEs (I love [neo]vim), Eclipse runs the following
-commands through cmake4eclipse plugin.
+Assuming you have cmake and conan installed, run the following commands.
 
-	cmake -DCMAKE_BUILD_TYPE:STRING=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS:BOOL=ON -G "MinGW Makefiles" -DEXAMPLE_BUILD_TYPE:STRING=<EXAMPLE-BUILD-TYPE> "path/to/cmake-example"
-	make -j6 all
+```
+mkdir build
+cd build
+conan install ..
+cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_VERBOSE_MAKEFILE=ON ..
+cmake --build ..
+```
 
-Possible values for `<EXECUTABLE-BUILD-TYPE>` are
+## Test
 
-- x64Debug
-- x64Release
-- x86Debug
-- x86Release
+```
+ctest --verbose
+```
 
-We simply ignore `-DCMAKE_BUILD_TYPE:STRING=Debug` and set it according to
-`<EXECUTABLE-BUILD-TYPE>`. Using the architecture information provided by our
-build type, we can implement a multi-architecture build system generator.
+## Run
 
-You can also build the project from Cmder. Instead of Makefile-based
-generators, you can give *Ninja* a try, which is supposed to be faster than
-make. Assuming you have installed Ninja and have it on your `PATH` environment
-variable, run the following commands
-
-	cd /path/to/cmake-project
-	mkdir "build/<EXAMPLE-BUILD-TYPE>"
-	cd build/<EXAMPLE-BUILD-TYPE>
-	cmake -G "Ninja" -DEXAMPLE_BUILD_TYPE=<EXAMPLE-BUILD-TYPE> ../../
-	ninja all | cat
-
-Note that cmake won't work with *MinGW Makefiles* on Cmder, but it should work with
-*MSYS Makefiles* and *Unix Makefiles*. Run `cmake -h` to see other generators.
+```
+./bin/app1
+./bin/app2
+```

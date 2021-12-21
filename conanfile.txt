@@ -1,0 +1,6 @@
+[requires]
+gtest/1.11.0
+
+[generators]
+cmake_find_package
+virtualenv

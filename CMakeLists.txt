@@ -1,21 +1,24 @@
-cmake_minimum_required(VERSION 3.8 FATAL_ERROR)
-project(cmake-example)
+cmake_minimum_required(VERSION 3.10)
 
-# Location of additional cmake modules
-set(CMAKE_MODULE_PATH
-    "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
-    "${CMAKE_MODULE_PATH}"
-    )
+project(CMakeExample)
 
-include(BuildTypeConfig)
+set(CMAKE_CXX_STANDARD 17)
 
-set(EXAMPLE_COMPILE_OPTIONS
-    -fmessage-length=0
-    )
+set(CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}" "${CMAKE_MODULE_PATH}")
+set(CMAKE_PREFIX_PATH "${CMAKE_BINARY_DIR}" "${CMAKE_PREFIX_PATH}")
 
-add_compile_options("${EXAMPLE_COMPILE_OPTIONS}")
-set(CMAKE_C_USE_RESPONSE_FILE_FOR_INCLUDES FALSE)
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/bin")
 
-add_subdirectory(square)
-add_subdirectory(circle)
-add_subdirectory(common)
+option(BUILD_TESTS "Build tests" ON)
+
+enable_testing()
+
+add_subdirectory(src)
+add_subdirectory(apps)
+
+if (BUILD_TESTS)
+    add_subdirectory(tests)
+endif ()
+
